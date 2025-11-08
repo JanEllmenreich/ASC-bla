@@ -7,12 +7,18 @@ namespace bla = ASC_bla;
 
 int main()
 {
-  size_t n = 5;
-  bla::Matrix<double> x(3, 2);
-  bla::Matrix<double, bla::Ordering::ColMajor> y(2, 3);
+  bla::Matrix<double> M(3, 2);
+  bla::Matrix<double, bla::Ordering::ColMajor> N(2, 3);
+  bla::Vector<double> x(2);
 
-  x = 1;
-  y = 2;
+  for (size_t i = 0; i < M.Rows(); i++)
+    for (size_t j = 0; j < M.Cols(); j++)
+      M(i, j) = i + j;
+
+  x = 2;
+  N = 3;
+
+  auto a = M * x;
 
 //   for (size_t i = 0; i < x.Size(); i++)
 //     {
@@ -21,7 +27,8 @@ int main()
 //     }
 
 //   bla::Matrix<double> z = x+y;
-  std::cout << "x = " << x << std::endl;
-  std::cout << "y = " << y << std::endl;
-  std::cout << "z = " << x * y << std::endl;
+  std::cout << "x = " << a << std::endl;
+  std::cout << M << std::endl;
+  std::cout << M.transpose() << std::endl;
+  std::cout << M * N << std::endl;
 }

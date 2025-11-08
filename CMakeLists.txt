@@ -13,6 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include_directories(src)
 
 add_subdirectory (demos)
+add_subdirectory(tests)
 
 
 

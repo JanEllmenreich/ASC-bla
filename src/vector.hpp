@@ -13,7 +13,7 @@ namespace ASC_bla
     T * data;
     
   public:
-    Vector (size_t _size) 
+    explicit Vector (size_t _size)
       : size(_size), data(new T[size]) { ; }
     
     Vector (const Vector & v)
@@ -22,7 +22,7 @@ namespace ASC_bla
       *this = v;
     }
 
-    Vector (Vector && v)
+    Vector (Vector && v) noexcept
       : size(0), data(nullptr)
     {
       std::swap(size, v.size);
@@ -44,7 +44,12 @@ namespace ASC_bla
       std::swap(data, v2.data);
       return *this;
     }
-    
+
+    Vector& operator=(T value) {
+      std::fill(data, data + Size(), value);
+      return *this;
+    }
+
     size_t Size() const { return size; }
     T & operator()(size_t i) { return data[i]; }
     const T & operator()(size_t i) const { return data[i]; }
@@ -63,10 +68,13 @@ namespace ASC_bla
   template <typename T>
   std::ostream & operator<< (std::ostream & ost, const Vector<T> & v)
   {
-    if (v.Size() > 0)
-      ost << v(0);
+    if (v.Size() == 0)
+      return ost << "[]";
+
+    ost << "[" << v(0);
     for (size_t i = 1; i < v.Size(); i++)
       ost << ", " << v(i);
+    ost << "]";
     return ost;
   }
   

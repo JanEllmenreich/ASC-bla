@@ -1,14 +1,28 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "matrix.hpp"
-#include "vector.hpp"
 
-TEST_CASE("Vector tests", "[Vector std::ranges concepts]") {
+TEST_CASE("Fill matrix", "[Matrix tests]") {
 
-    STATIC_CHECK(std::ranges::contiguous_range<asc::dynamic_vector<double>>);
-    STATIC_CHECK(std::ranges::contiguous_range<asc::contiguous_vector_view<double>>);
+  ASC_bla::Matrix<double> mat(2, 5);
+  mat = 3.14;
 
-    STATIC_CHECK(std::ranges::random_access_range<asc::slice_vector_view<double, 1>>);
-    STATIC_CHECK(std::ranges::random_access_range<asc::slice_vector_view<double>>);
+  for (size_t i = 0; i < mat.Rows(); i++)
+    for (size_t j = 0; j < mat.Cols(); j++)
+      REQUIRE_THAT(mat(i, j) , Catch::Matchers::WithinAbs(3.14, 1e-12));
 }
 
+TEST_CASE("Add matrix", "[Matrix tests]") {
+
+  ASC_bla::Matrix<double> x(2, 5);
+  ASC_bla::Matrix<double> y(2, 5);
+  x = 3.14;
+  y = 1;
+
+  auto z = x + y;
+
+  for (size_t i = 0; i < z.Rows(); i++)
+    for (size_t j = 0; j < z.Cols(); j++)
+      REQUIRE_THAT(z(i, j) , Catch::Matchers::WithinAbs(4.14, 1e-12));
+}

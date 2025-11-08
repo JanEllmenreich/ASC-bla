@@ -2,12 +2,13 @@
 #define FILE_MATRIX
 
 #include <iostream>
+#include <vector.hpp>
 
 namespace ASC_bla {
 
 enum class Ordering { RowMajor, ColMajor };
 
-template <typename T, Ordering O = Ordering::RowMajor>
+template <typename T, Ordering ORD = Ordering::RowMajor>
 class Matrix {
   T* data;
   size_t rows;
@@ -48,41 +49,57 @@ class Matrix {
     return *this;
   }
 
+  auto transpose() const {
+    Matrix<T, (ORD == Ordering::RowMajor) ? Ordering::ColMajor
+                                         : Ordering::RowMajor>
+
+        result(cols, rows);
+    for (size_t i = 0; i < rows; i++)
+      for (size_t j = 0; j < cols; j++) result(j, i) = (*this)(i, j);
+    return result;
+  }
+
   size_t Size() const { return rows * cols; }
   size_t Rows() const { return rows; }
   size_t Cols() const { return cols; }
 
-  T& operator()(size_t i) { return data[i]; }
-  const T& operator()(size_t i) const { return data[i]; }
-
   T& operator()(size_t i, size_t j) {
-    if constexpr (O == Ordering::RowMajor)
-      return data[j + i * rows];
+    if constexpr (ORD == Ordering::RowMajor)
+      return data[j + i * cols];
     else
-      return data[i + j * cols];
+      return data[i + j * rows];
   }
 
   const T& operator()(size_t i, size_t j) const {
-    if constexpr (O == Ordering::RowMajor)
+    if constexpr (ORD == Ordering::RowMajor)
     {
-      std::cout << "i, k = " << i << " " << j << "\n";
-      std::cout << Rows() << " " << Cols() << "\n";
-      return data[j + i * rows];
+      return data[j + i * cols];
     }
     else
     {
-      std::cout << "k, j = " << i << " " << j << "\n";
-      std::cout << Rows() << " " << Cols() << "\n";
-      return data[i + j * cols];
+      return data[i + j * rows];
     }
   }
 };
 
-template <typename T, Ordering O>
-Matrix<T, O> operator+(const Matrix<T, O>& a, const Matrix<T, O>& b) {
+template <typename T, Ordering ORD>
+Matrix<T, ORD> operator+(const Matrix<T, ORD>& a, const Matrix<T, ORD>& b) {
   Matrix<T> sum(a.Rows(), a.Cols());
-  for (size_t i = 0; i < a.Size(); i++) sum(i) = a(i) + b(i);
+  for (size_t i = 0; i < a.Rows(); i++)
+    for (size_t j = 0; j < a.Cols(); j++) sum(i, j) = a(i, j) + b(i, j);
   return sum;
+}
+
+template<typename T, Ordering ORD>
+Vector<T> operator*(const Matrix<T, ORD>& mat, const Vector<T>& vec) {
+  Vector<T> result(mat.Rows());
+  for (size_t i = 0; i < mat.Rows(); i++) {
+    result(i) = 0;
+    for (size_t j = 0; j < mat.Cols(); j++) {
+      result(i) += mat(i, j) * vec(j);
+    }
+  }
+  return result;
 }
 
 template <typename T>
@@ -92,21 +109,34 @@ Matrix<T> operator*(const Matrix<T, Ordering::RowMajor>& a,
 
   sum = 0.0;
 
-  for (size_t i = 0; i < 1; i++)
-    for (size_t j = 0; j < 1; j++)
-      for (size_t k = 0; k < 3; k++) 
+  for (size_t i = 0; i < a.Rows(); i++)
+    for (size_t j = 0; j < b.Cols(); j++)
+      for (size_t k = 0; k < a.Cols(); k++)
       {
-        std::cout << i << " " << j << " " << k << "\n";
         sum(i, j) += a(i, k) * b(k, j);
       }
 
   return sum;
 }
 
-template <typename T, Ordering O>
-std::ostream& operator<<(std::ostream& ost, const Matrix<T, O>& v) {
-  if (v.Size() > 0) ost << v(0);
-  for (size_t i = 1; i < v.Size(); i++) ost << ", " << v(i);
+template <typename T, Ordering ORD>
+std::ostream& operator<<(std::ostream& ost, const Matrix<T, ORD>& mat) {
+
+  if (mat.Size() == 0) return ost << "[[]]";
+
+  ost << "[[" << mat(0, 0);
+  for (size_t j = 1; j < mat.Cols(); j++) {
+    ost << ", " << mat(0, j);
+  }
+  ost << "]";
+  for (size_t i = 1; i < mat.Rows(); i++) {
+    ost << "\n ["<< mat(i, 0);;
+    for (size_t j = 1; j < mat.Cols(); j++) {
+      ost << ", " << mat(i, j);
+    }
+    ost << "]";
+  }
+  ost << "]";
   return ost;
 }
 
